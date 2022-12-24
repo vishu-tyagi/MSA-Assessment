@@ -12,3 +12,7 @@ LONGITUDE = "longitude"
 POPULATION = "population"
 MSA = "msa"
 USA = "united states"
+
+MAJORITY = "First Majority"
+SECOND_MAJORITY = "Second Majority"
+CLUSTER = "cluster"
