@@ -7,8 +7,7 @@ dependencies:
   - pandas==1.4.4
   - scikit-learn==1.1.2
   - requests==2.28.1
-  - tqdm
-  - haversine
+  - tqdm==4.64.1
   # Interactive
   - jupyter==1.0.0
   - matplotlib==3.5.3
@@ -22,4 +21,4 @@ dependencies:
   # Pip
   - pip==22.2.2
   - pip:
-    - hdbscan
+    - hdbscan==0.8.29
