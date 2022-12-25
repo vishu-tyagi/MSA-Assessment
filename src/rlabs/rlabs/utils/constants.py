@@ -11,7 +11,9 @@ LATITUDE = "latitude"
 LONGITUDE = "longitude"
 POPULATION = "population"
 MSA = "msa"
+
 USA = "united states"
+R = 3959 # Earth radius in mi
 
 MAJORITY = "First Majority"
 SECOND_MAJORITY = "Second Majority"

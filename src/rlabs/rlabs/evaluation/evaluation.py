@@ -1,15 +1,14 @@
-from typing import (List, Optional)
+from typing import List
 
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
-from scipy.spatial.distance import cdist
 
 from rlabs.config import RLabsConfig
 from rlabs.utils.constants import (
     CLUSTER,
     MAJORITY,
-    SECOND_MAJORITY,
+    SECOND_MAJORITY
 )
 
 
