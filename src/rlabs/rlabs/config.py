@@ -16,6 +16,6 @@ class RLabsConfig():
     merge_params = {
         "population_threshold": 5e4,
         "distance_threshold": 10.0,
-        "max_iter": 2000,
+        "max_iter": 6000,
         "verbose": 100
     }
