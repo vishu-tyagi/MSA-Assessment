@@ -26,6 +26,14 @@ class Model:
         self.config = config
 
     @timing
+    def compute_pairwise_distances(self, X, Y):
+        logger.info(f"Computing pairwise distances ...")
+        D = pairwise_distances(X, Y, metric="haversine")
+        D *= R  # Multiply by Earth radius to get miles
+        logger.info(f"Pairwise distances shape D.shape")
+        return D
+
+    @timing
     def cluster(
         self,
         D: np.ndarray
@@ -150,10 +158,12 @@ class Model:
             return df
         X = df[[LONGITUDE, LATITUDE]].to_numpy()
         X_radians = np.radians(X)
-        D_pairwise = pairwise_distances(X_radians, X_radians, metric="haversine")
-        D_pairwise *= R  # Multiply by Earth radius to get miles
+        D_pairwise = self.compute_pairwise_distances(X_radians, X_radians)
         clusters = self.cluster(D_pairwise)
         df[CLUSTER] = clusters.labels_
+        if df[CLUSTER].nunique() == 1 and df[CLUSTER].unique()[0] == -1:
+            logger.info("Found only noise")
+            return df
         df = self.merge(df=df.copy(), D=D_pairwise, **self.config.merge_params)
         return df
 
@@ -166,17 +176,29 @@ class Model:
         if countries_list is not None:
             df = df[df[COUNTRY].isin(countries_list)].copy()
             df.reset_index(drop=True, inplace=True)
-        countries_list = df[COUNTRY].unique().tolist()
-        result = None
-        for country_name in countries_list:
-            logger.info(f"Processing {country_name} ...")
-            country = df[df[COUNTRY].isin([country_name])].copy()
-            country.reset_index(drop=True, inplace=True)
-            country = self._build(df=country.copy())
-            country_name_ = country_name.replace(" ", "_")
-            country[CLUSTER] = country[CLUSTER].apply(lambda x: f"{country_name_}__{x}")
-            if result is not None:
-                result = pd.concat([result, country], ignore_index=True).copy()
-            else:
-                result = country.copy()
-        return result
+        df = self._build(df=df.copy())
+        return df
+
+    # @timing
+    # def build(
+    #     self,
+    #     df: pd.DataFrame,
+    #     countries_list: list[str] = None
+    # ):
+    #     if countries_list is not None:
+    #         df = df[df[COUNTRY].isin(countries_list)].copy()
+    #         df.reset_index(drop=True, inplace=True)
+    #     countries_list = df[COUNTRY].unique().tolist()
+    #     result = None
+    #     for country_name in countries_list:
+    #         logger.info(f"Processing {country_name} ...")
+    #         country = df[df[COUNTRY].isin([country_name])].copy()
+    #         country.reset_index(drop=True, inplace=True)
+    #         country = self._build(df=country.copy())
+    #         country_name_ = country_name.replace(" ", "_")
+    #         country[CLUSTER] = country[CLUSTER].apply(lambda x: f"{country_name_}__{x}")
+    #         if result is not None:
+    #             result = pd.concat([result, country], ignore_index=True).copy()
+    #         else:
+    #             result = country.copy()
+    #     return result
