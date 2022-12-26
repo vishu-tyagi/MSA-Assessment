@@ -5,12 +5,17 @@ from tabnanny import verbose
 import numpy as np
 import pandas as pd
 from hdbscan import HDBSCAN
+from sklearn.metrics import pairwise_distances
 
 from rlabs.config import RLabsConfig
 from rlabs.utils import timing
 from rlabs.utils.constants import (
     POPULATION,
-    CLUSTER
+    CLUSTER,
+    COUNTRY,
+    LATITUDE,
+    LONGITUDE,
+    R
 )
 
 logger = logging.getLogger(__name__)
@@ -24,7 +29,7 @@ class Model:
     def cluster(
         self,
         D: np.ndarray
-    ) -> HDBSCAN:
+    ):
         """
         Run Hierarchical clustering
         Args:
@@ -33,6 +38,8 @@ class Model:
             clusters (HDBSCAN): HDBSCAN fit object
         """
         clusters = HDBSCAN(**self.config.hdbscan_params).fit(D)
+        logger.info(f"Finished running hierarchical clustering")
+        logger.info(f"Found {np.unique(clusters.labels_).shape[0]-1} clusters")
         return clusters
 
     @timing
@@ -44,7 +51,7 @@ class Model:
         distance_threshold: int = 40,
         max_iter: int = 100,
         verbose: int = 10
-    ) -> pd.DataFrame:
+    ):
         """
         Merge clusters to ensure each cluster has at least one city with
         the population of at least population_threshold
@@ -75,6 +82,9 @@ class Model:
             return df
 
         logger.info(f"Merging clusters ...")
+        logger.info(f"population_threshold: {population_threshold}")
+        logger.info(f"distance_threshold: {distance_threshold}")
+        logger.info(f"max_iter: {max_iter}")
         iter = max_iter
         while iter:
             grouped_df = \
@@ -111,7 +121,7 @@ class Model:
             iter -= 1
             if not (max_iter - iter) % verbose:
                 num_clusters = df[CLUSTER].nunique() - 1
-                logger.info(f"Ran for {max_iter - iter} iterations. # clusters {num_clusters}")
+                logger.info(f"({max_iter - iter}/{max_iter}) {num_clusters} clusters left")
 
         if not iter:
             if df[~df[CLUSTER].isin([-1])] \
@@ -126,4 +136,47 @@ class Model:
 
         remap = {c: i for i, c in enumerate(sorted(list(set(df[CLUSTER]) - set({-1}))))}
         df[CLUSTER] = df[CLUSTER].replace(remap)
+        logger.info(f"Number of clusters reduced to {df[CLUSTER].nunique()-1}")
         return df
+
+    @timing
+    def _build(
+        self,
+        df: pd.DataFrame
+    ):
+        if df.shape[0] == 1:
+            logger.info("Found only one city")
+            df[CLUSTER] = 0
+            return df
+        X = df[[LONGITUDE, LATITUDE]].to_numpy()
+        X_radians = np.radians(X)
+        D_pairwise = pairwise_distances(X_radians, X_radians, metric="haversine")
+        D_pairwise *= R  # Multiply by Earth radius to get miles
+        clusters = self.cluster(D_pairwise)
+        df[CLUSTER] = clusters.labels_
+        df = self.merge(df=df.copy(), D=D_pairwise, **self.config.merge_params)
+        return df
+
+    @timing
+    def build(
+        self,
+        df: pd.DataFrame,
+        countries_list: list[str] = None
+    ):
+        if countries_list is not None:
+            df = df[df[COUNTRY].isin(countries_list)].copy()
+            df.reset_index(drop=True, inplace=True)
+        countries_list = df[COUNTRY].unique().tolist()
+        result = None
+        for country_name in countries_list:
+            logger.info(f"Processing {country_name} ...")
+            country = df[df[COUNTRY].isin([country_name])].copy()
+            country.reset_index(drop=True, inplace=True)
+            country = self._build(df=country.copy())
+            country_name_ = country_name.replace(" ", "_")
+            country[CLUSTER] = country[CLUSTER].apply(lambda x: f"{country_name_}__{x}")
+            if result is not None:
+                result = pd.concat([result, country], ignore_index=True).copy()
+            else:
+                result = country.copy()
+        return result

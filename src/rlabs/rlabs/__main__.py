@@ -1,7 +1,8 @@
 import sys
 import logging
 
-from rlabs.api import fetch
+from rlabs.api import (fetch, build)
+from rlabs.utils.constants import USA
 
 
 if __name__ == "__main__":
@@ -10,5 +11,9 @@ if __name__ == "__main__":
     try:
         if sys.argv[1] == "fetch":
             fetch()
+        elif sys.argv[1] == "build-usa":
+            build(target_fname="us_cities.csv", countries_list=[USA])
+        elif sys.argv[1] == "build-all":
+            build(target_fname="all_cities.csv")
     except IndexError:
         raise ValueError("Call to API requires an endpoint")
