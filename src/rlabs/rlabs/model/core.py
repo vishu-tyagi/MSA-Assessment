@@ -130,9 +130,9 @@ class Model:
                 logger.info(f"Maximum iterations {max_iter} reached without convergence")
                 logger.info(f"Consider increasing max_iter")
             else:
-                logger.info(f"Converged in {max_iter} iterations")
+                logger.info(f"Converged after {max_iter} iterations")
         else:
-            logger.info(f"Converged in {max_iter - iter} iterations")
+            logger.info(f"Converged after {max_iter - iter} iterations")
 
         remap = {c: i for i, c in enumerate(sorted(list(set(df[CLUSTER]) - set({-1}))))}
         df[CLUSTER] = df[CLUSTER].replace(remap)
