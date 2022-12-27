@@ -40,6 +40,12 @@ We set `distance_threshold` equal to `10`, which means that if the closest clust
 
 - It took 11 hrs. 23 minutes to run on all cities.
 
+**Questions**
+
+1. Can you give a reasonable explanation as to why your approach is better and more useful than the standard MSAs?
+
+My approach ensures each metropolitan has at least one city with a population of 50,000. The standard MSA do not satisfy this condition. It uses Haversine distance to build small dense clusters and helps identify non-metropolitan cities more accurately. Most importantly, it is flexible and can be adjusted to incorporate more parameters and prior beliefs per goals while the standard MSAs are fixed. Additionally, it is scalable and can be applied to almost all countries.
+
 ## Setup Instructions
 
 #### Move into top-level directory
