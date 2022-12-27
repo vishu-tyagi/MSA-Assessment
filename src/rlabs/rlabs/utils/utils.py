@@ -13,7 +13,9 @@ def timing(f):
         te = time()
         time_taken = te - ts
         hours_taken = time_taken // (60 * 60)
+        time_taken %= (60 * 60)
         minutes_taken = time_taken // 60
+        time_taken %= 60
         seconds_taken = time_taken % 60
         if hours_taken:
             message = \

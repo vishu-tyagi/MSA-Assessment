@@ -2,8 +2,6 @@ import os
 from pathlib import Path
 import logging
 
-import pandas as pd
-
 from rlabs.config import RLabsConfig
 from rlabs.data_access.helpers import (download_data)
 from rlabs.utils import timing
