@@ -36,7 +36,7 @@ We set `distance_threshold` equal to `10`, which means that if the closest clust
 
 - Part 2 algorithm is bound to converge because, on every iteration, we reduce the number of clusters by 1.
 
-- It took 1 hr. 9 minutes to run on US cities and 11 hrs. 23 minutes to run on all cities.
+- It took `1 hr. 9 minutes` to run on US cities and `11 hrs. 23 minutes` to run on all cities. Obtained `360` clusters on US cities and `2532` clusters on all cities.
 
 **Questions**
 
@@ -99,6 +99,8 @@ The notebooks may be viewed in the following order:
 2. *[us_cities.ipynb](notebooks/us_cities.ipynb)* - Includes results on US cities
 
 ## Results
+
+Clusters genearted by the algorithm are in the `cluster` column. -1 value indicates noise.
 
 1. *[us_cities.csv](reports/us_cities.csv)* - CSV with clusters for US cities
 
